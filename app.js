@@ -1,3 +1,19 @@
+const one = document.querySelector("#one");
+const two = document.querySelector("#two");
+const three = document.querySelector("#three");
+const four = document.querySelector("#four");
+const five = document.querySelector("#five");
+const six = document.querySelector("#six");
+const seven = document.querySelector("#seven");
+const eight = document.querySelector("#eight");
+const nine = document.querySelector("#nine");
+
+const squares = [
+    [one, two, three],
+    [four, five, six],
+    [seven, eight, nine]
+]
+
 let gameBoard = [
     ["", "", ""],
     ["", "", ""],
@@ -15,16 +31,9 @@ let player2 = {
 }
 
 const game = (function(){
-    const playTurn = function(player){
-        let position = prompt("Choose your position on the grid (row, column)");
-        let row = parseInt(position[0]);
-        let column = parseInt(position[3]);
-        while (gameBoard[row - 1][column - 1]) {
-            position = prompt("That spot is already taken. Choose one that's free!");
-            row = parseInt(position[0]);
-            column = parseInt(position[3]);
-        }
-        gameBoard[row - 1][column - 1] = player.symbol;
+    const updateDisplay = function(i, j, player) {
+        gameBoard[i][j] = `${player.symbol}`;
+        squares[i][j].textContent = `${player.symbol}`;
     }
 
     const checkWinner = function(player){
@@ -63,14 +72,14 @@ const game = (function(){
         return "";
     }
 
-    return {playTurn, checkWinner};
+    return {updateDisplay, checkWinner};
 })()
 
 function playGame() {
     let player = player1;
     let turns = 0;
     let result = "";
-    const symbol = prompt("Noughts or crosses: What do you choose?");
+    let symbol = "O";
 
     if (symbol.toLowerCase() === "noughts" || symbol.toLowerCase() === "o") {
         player1.symbol = "O";
@@ -81,16 +90,24 @@ function playGame() {
         player2.symbol = "O";
     }
 
-    while ((turns < 9) && !result) {
-        game.playTurn(player);
-        turns++;
-        console.log(gameBoard);
-        if(turns > 4) result = game.checkWinner(player, result);
-        (player === player1)? player = player2: player = player1;
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            squares[i][j].addEventListener("click", () => {
+                if ((turns < 10) && (gameBoard[i][j] === "") && !result){
+                    game.updateDisplay(i, j, player);
+                    turns++;
+                    if(turns > 4) result = game.checkWinner(player);
+                    if (result !== "") {
+                        console.log(`${result} wins. Congratulations!`);
+                        return;
+                    }
+                    (player === player1)? player = player2: player = player1;
+                    
+                }
+            });
+        }
     }
-
-    if (result === "") console.log("It's a draw. Nobody wins this round");
-    else console.log(`${result} wins. Congratulations!`);
+    if (result === "" && turns === 9) console.log("It's a draw. Nobody wins this round");
 }
 
 playGame();
