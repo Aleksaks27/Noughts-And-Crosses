@@ -7,8 +7,10 @@ const six = document.querySelector("#six");
 const seven = document.querySelector("#seven");
 const eight = document.querySelector("#eight");
 const nine = document.querySelector("#nine");
+const resetButton = document.querySelector("#reset");
+const display = document.querySelector("#display");
 
-const squares = [
+let squares = [
     [one, two, three],
     [four, five, six],
     [seven, eight, nine]
@@ -31,7 +33,8 @@ let player2 = {
 }
 
 const game = (function(){
-    const updateDisplay = function(i, j, player) {
+
+    const updateDisplay = function(i, j, player){
         gameBoard[i][j] = `${player.symbol}`;
         squares[i][j].textContent = `${player.symbol}`;
     }
@@ -54,17 +57,17 @@ const game = (function(){
         let opposite;
         (player.symbol === "O")? opposite = "X": opposite = "O";
 
-        for (let row of combinations.rows) {
+        for (let row of combinations.rows){
             if ((row.includes(symbol)) && (!row.includes(opposite)) && (!row.includes(""))){
                 return player.name;
             }
         }
-        for (let col of combinations.cols) {
+        for (let col of combinations.cols){
             if ((col.includes(symbol)) && (!col.includes(opposite)) && (!col.includes(""))){
                 return player.name;
             }
         }
-        for (let diag of combinations.diags) {
+        for (let diag of combinations.diags){
             if ((diag.includes(symbol)) && (!diag.includes(opposite)) && (!diag.includes(""))){
                 return player.name;
             }
@@ -72,42 +75,64 @@ const game = (function(){
         return "";
     }
 
-    return {updateDisplay, checkWinner};
+    const reset = function(turns, result){
+        turns = 0;
+        result = "";
+        display.textContent = "Noughts start. Click the board to begin.";
+        display.style = "font-weight: normal";
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                gameBoard[i][j] = "";
+                squares[i][j].textContent = "";
+                let newSquare = squares[i][j].cloneNode(true);
+                squares[i][j].parentNode.replaceChild(newSquare, squares[i][j]);
+                squares[i][j] = newSquare
+            }
+        }
+    }
+
+    return {updateDisplay, checkWinner, reset};
 })()
 
 function playGame() {
     let player = player1;
     let turns = 0;
     let result = "";
-    let symbol = "O";
-
-    if (symbol.toLowerCase() === "noughts" || symbol.toLowerCase() === "o") {
-        player1.symbol = "O";
-        player2.symbol = "X";
-    }
-    else {
-        player1.symbol = "X";
-        player2.symbol = "O";
-    }
+    player1.symbol = "O";
+    player2.symbol = "X";
 
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
             squares[i][j].addEventListener("click", () => {
                 if ((turns < 10) && (gameBoard[i][j] === "") && !result){
                     game.updateDisplay(i, j, player);
-                    turns++;
+                    turns++
+
                     if(turns > 4) result = game.checkWinner(player);
+
                     if (result !== "") {
-                        console.log(`${result} wins. Congratulations!`);
+                        display.textContent =`${result} wins. Congratulations!`;
+                        display.style = "font-weight: bold";
                         return;
                     }
+                    if (result === "" && turns === 9) {
+                        display.textContent = "It's a draw. Nobody wins this round";
+                        display.style = "font-weight: bold";
+                        return;
+                    }
+
                     (player === player1)? player = player2: player = player1;
                     
                 }
             });
         }
     }
-    if (result === "" && turns === 9) console.log("It's a draw. Nobody wins this round");
+
+
+    resetButton.addEventListener("click", () => {
+        game.reset(turns, result);
+        playGame();
+    });
 }
 
 playGame();
