@@ -6,9 +6,62 @@ body {
     background-color: #f4f7f7;
 }
 
+#options[open] {
+    width: 500px;
+    height: 300px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    border: none;
+}
+
+#options h2 {
+    font-size: 30px;
+}
+
+#mode-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+#mode-buttons button {
+    padding: 10px;
+    font-size: 25px;
+    font-weight: bold;
+    color: white;
+    background-color: #79a8a9;
+    border: 1px solid black;
+}
+
+#mode-buttons button:hover {
+    cursor: pointer;
+}
+
+.selected-mode {
+    border: 2px solid rgb(86, 255, 114) !important;
+    transform: scale(1.1) !important;
+}
+
+#start-button {
+    font-size: 25px;
+    color: #79a8a9;
+    background-color: white;
+    border: 2px solid #79a8a9;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+#start-button:hover {
+    cursor: pointer;
+    background-color: #d3f9fa;
+}
+
 h1, p {
     text-align: center;
-    /* color: #1f4e5f; */
 }
 
 h1 {
@@ -22,8 +75,8 @@ p {
 
 #board {
     margin: 50px auto 0 auto;
-    width: 30vw;
-    height: 30vw;
+    width: 400px;
+    height: 400px;
     display: grid;
     grid-template: repeat(3, 1fr) / repeat(3, 1fr);
     gap: 5px;
@@ -32,11 +85,10 @@ p {
 
 #board > div {
     background-color: white;
-    /* text-align: center; */
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 40px;
+    font-size: 60px;
     color: #1f4e5f;
 }
 
@@ -88,9 +140,12 @@ p {
     border-left: 1px solid black;
 }
 
+.winner {
+    background-color: rgb(255, 215, 0) !important;
+}
+
 #board > div:hover {
     cursor: pointer;
-    /* transition: background-color 0.7s ease; */
 }
 
 #board > div:active {
@@ -107,13 +162,77 @@ p {
     border-radius: 10px;
 }
 
+#reset:hover {
+    cursor: pointer;
+}
+
 #reset:active {
     background-color: #79a8a9;
 }
 
-/* #display {
-    font-size: 30px;
-    text-align: center;
-    font-weight: bold;
-    margin: 20px auto 50px auto;
-} */
+@media (max-width: 700px) or (max-height: 700px){
+    h1 {
+        font-size: 40px;
+        margin: 20px auto;
+    }
+
+    #board {
+        margin: 50px auto 0 auto;
+        width: 350px;
+        height: 350px;
+        gap: 4px;
+    }
+
+    #board > div {
+        font-size: 50px;
+    }
+}
+
+@media (max-width: 500px) or (max-height: 500px){
+    h1 {
+        font-size: 30px;
+        margin: 20px auto;
+    }
+
+    #board {
+        margin: 50px auto 0 auto;
+        width: 300px;
+        height: 300px;
+    }
+
+    #board > div {
+        font-size: 40px;
+    }
+}
+
+@media (max-width: 700px) {
+    #options[open] {
+        width: 400px;
+        height: 240px;
+        padding: 8px;
+        gap: 30px;
+    }
+
+    #options h2 {
+        font-size: 25px;
+    }
+
+    #mode-buttons button, #start-button {
+        padding: 8px;
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 500px) {
+    #options[open] {
+        width: 300px;
+        height: 200px;
+        padding: 5px;
+        gap: 20px;
+    }
+
+    #mode-buttons button, #start-button {
+        padding: 8px;
+        font-size: 20px;
+    }
+}
