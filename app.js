@@ -11,7 +11,8 @@ const resetButton = document.querySelector("#reset");
 const display = document.querySelector("#display");
 
 const options = document.querySelector("#options");
-const singlePlayer = document.querySelector("#single-player");
+const singleEasy = document.querySelector("#single-easy");
+const singleHard = document.querySelector("#single-hard");
 const twoPlayer = document.querySelector("#two-player");
 const startButton = document.querySelector("#start-button");
 let mode;
@@ -32,12 +33,18 @@ let gameBoard = [
 
 let player1 = {
     name: "Player 1",
-    symbol: ""
+    symbol: "O"
 }
 
 let player2 = {
     name: "Player 2",
-    symbol: ""
+    symbol: "🗙"
+}
+
+let combinations = {
+    rows: [],
+    cols: [],
+    diags: []
 }
 
 const game = (function(){
@@ -46,11 +53,12 @@ const game = (function(){
     const playTurn = function(i, j, player) {
         game.updateDisplay(i, j, player);
         turns++
+        game.updateCombinations();
         if(turns > 4) result = game.checkWinner(player);
 
         if (result !== "") {
             if (result === "Player 1") display.textContent =`${result} wins. Congratulations!`;
-            else if (mode === "single") display.textContent =`The computer wins. Better luck next time!`;
+            else if (mode === "single-easy" || mode === "single-hard") display.textContent =`The computer wins. Better luck next time!`;
             else display.textContent =`${result} wins. Congratulations!`;
             display.style = "font-weight: bold";
             return;
@@ -63,27 +71,28 @@ const game = (function(){
     }
 
     const updateDisplay = function(i, j, player){
-        gameBoard[i][j] = `${player.symbol}`;
+        gameBoard[i][j] = player.symbol;
         squares[i][j].textContent = `${player.symbol}`;
     }
 
     // There are only 8 ways to win this game. checkWinner() checks each possiblity after
     // every turn. All squares of the winning combination have the .winner class added
     // which turns the background gold.
-    const checkWinner = function(player){
-        let combinations = {
-            rows: [gameBoard[0], gameBoard[1], gameBoard[2]],
-            cols: [
+
+    const updateCombinations = function() {
+        combinations.rows = [gameBoard[0], gameBoard[1], gameBoard[2]];
+        combinations.cols = [
                 [gameBoard[0][0], gameBoard[1][0], gameBoard[2][0]],
                 [gameBoard[0][1], gameBoard[1][1], gameBoard[2][1]],
                 [gameBoard[0][2], gameBoard[1][2], gameBoard[2][2]]
-            ],
-            diags: [
+            ];
+        combinations.diags = [
                 [gameBoard[0][0], gameBoard[1][1], gameBoard[2][2]],
                 [gameBoard[0][2], gameBoard[1][1], gameBoard[2][0]]
-            ]
-        }
+            ];
+    }
 
+    const checkWinner = function(player){
         let symbol = player.symbol;
         let opposite;
         (player.symbol === "O")? opposite = "🗙": opposite = "O";
@@ -111,36 +120,15 @@ const game = (function(){
         }
         return "";
     }
-
-    // This function is not used anymore. This resets the game board by replacing the
-    // child nodes with new (empty) div elements. This prevented them from piling up.
-    // const reset = function(turns, result){
-    //     turns = 0;
-    //     result = "";
-    //     display.textContent = "Noughts start. Click the board to begin.";
-    //     display.style = "font-weight: normal";
-    //     for (let i = 0; i < 3; i++) {
-    //         for (let j = 0; j < 3; j++) {
-    //             gameBoard[i][j] = "";
-    //             squares[i][j].textContent = "";
-    //             let newSquare = squares[i][j].cloneNode(true);
-    //             squares[i][j].parentNode.replaceChild(newSquare, squares[i][j]);
-    //             squares[i][j] = newSquare
-    //         }
-    //     }
-    // }
-
-    return {playTurn, updateDisplay, checkWinner};
+    return {playTurn, updateDisplay, updateCombinations, checkWinner};
 })()
 
 // In single player mode, the computer's turn is activated after the user clicks a square.
 // The computer chooses a position after a slight delay during which the user cannot
 // click anything and ruin the game's flow.
-function singleMode() {
+function easyMode() {
     let computerChoice = [Math.floor(Math.random() * 3), Math.floor(Math.random() * 3)];
     let player = player1;
-    player1.symbol = "O";
-    player2.symbol = "🗙";
 
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
@@ -150,27 +138,69 @@ function singleMode() {
                     player = player2
 
                     if (!result & (turns < 9)) {
-                        if (!gameBoard.includes("🗙")) {
+                        while (gameBoard[computerChoice[0]][computerChoice[1]] !== "") {
+                            computerChoice = [Math.floor(Math.random() * 3), Math.floor(Math.random() * 3)];
+                        }
+                        setTimeout(() => {
+                            game.playTurn(computerChoice[0], computerChoice[1], player);
+                            player = player1;
+                        }, 1500);
+                    }
+                }
+            });
+        }
+    }
+}
+
+function hardMode() {
+    let computerChoice;
+    let player = player1;
+
+    for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+            squares[i][j].addEventListener("click", () => {
+                computerChoice = [];
+                if ((turns < 10) && (gameBoard[i][j] === "") && !result && (player === player1)){
+                    game.playTurn(i, j, player);
+                    player = player2
+
+                    if (!result & (turns < 9)) {
+                        for (let row of combinations.rows){
+                            if (row.filter(value => value === player1.symbol).length === 2 && row.includes("") 
+                            || row.filter(value => value === player2.symbol).length === 2 && row.includes("") ){
+                                computerChoice.push(combinations.rows.indexOf(row));
+                                computerChoice.push(row.indexOf(""));
+                            }
+                        }
+                        for (let col of combinations.cols){
+                            if (col.filter(value => value === player1.symbol).length === 2 && col.includes("") 
+                            || col.filter(value => value === player2.symbol).length === 2 && col.includes("") ){
+                                computerChoice.push(col.indexOf(""));
+                                computerChoice.push(combinations.cols.indexOf(col));
+                                
+                            }
+                        }
+                        for (let diag of combinations.diags){
+                            if (diag.filter(value => value === player1.symbol).length === 2 && diag.includes("") 
+                            || diag.filter(value => value === player2.symbol).length === 2 && diag.includes("") ){
+                                if (combinations.diags.indexOf(diag) === 0) {
+                                    computerChoice.push(diag.indexOf(""));
+                                    computerChoice.push(diag.indexOf(""));
+                                }
+                                else {
+                                    computerChoice.push(diag.indexOf(""));
+                                    computerChoice.push(2- diag.indexOf(""));
+                                }
+                            }
+                        }
+                        if (!computerChoice.length) {
+                            computerChoice = [Math.floor(Math.random() * 3), Math.floor(Math.random() * 3)];
                             while (gameBoard[computerChoice[0]][computerChoice[1]] !== "") {
                                 computerChoice = [Math.floor(Math.random() * 3), Math.floor(Math.random() * 3)];
                             }
                         }
-                        else {
-                            for (let i = 0; i < 3; i++) {
-                                for (let j = 0; j < 3; j++) {
-                                    if (gameBoard[i][j] === "") {
-                                        if (gameBoard[i].includes("🗙") || gameBoard[i-1][j] === "🗙" || gameBoard[i+1][j] === "🗙") {
-                                            computerChoice = [i, j];
-                                        }
-                                        else if (gameBoard[i-1][j-1] ==="🗙" || gameBoard[i-1][j+1] === "🗙" || gameBoard[i+1][j-1] === "🗙" || gameBoard[i+1][j+1] === "🗙") {
-                                            computerChoice = [i, j]
-                                        }
-                                    }
-                                }
-                            }
-                        }
                         setTimeout(() => {
-                            game.playTurn(computerChoice[0], computerChoice[1], player2);
+                            game.playTurn(computerChoice[0], computerChoice[1], player);
                             player = player1;
                         }, 1500);
                     }
@@ -199,21 +229,31 @@ function twoPlayerMode() {
 
 options.showModal();
 
-singlePlayer.addEventListener("click", () => {
-    singlePlayer.classList.add("selected-mode");
+singleEasy.addEventListener("click", () => {
+    singleEasy.classList.add("selected-mode");
+    singleHard.classList.remove("selected-mode");
     twoPlayer.classList.remove("selected-mode");
-    mode = "single";
+    mode = "single-easy";
+})
+
+singleHard.addEventListener("click", () => {
+    singleHard.classList.add("selected-mode");
+    singleEasy.classList.remove("selected-mode");
+    twoPlayer.classList.remove("selected-mode");
+    mode = "single-hard";
 })
 
 twoPlayer.addEventListener("click", () => {
     twoPlayer.classList.add("selected-mode");
-    singlePlayer.classList.remove("selected-mode");
+    singleEasy.classList.remove("selected-mode");
+    singleHard.classList.remove("selected-mode");
     mode = "two-player"
 })
 
 startButton.addEventListener("click", () => {
     if (mode) {
-        if (mode === "single") singleMode();
+        if (mode === "single-easy") easyMode();
+        else if (mode === "single-hard") hardMode();
         else twoPlayerMode();
         options.close();
     }
